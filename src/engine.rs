@@ -1,8 +1,8 @@
-use std::fmt;
-use super::Time;
 use super::EventQueue;
+use super::Time;
+use std::fmt;
 
-pub struct Engine<Actor,Action,Event> {
+pub struct Engine<Actor, Action, Event> {
     pub stop: bool,
     pub turn: Option<Actor>,
     pub event_queue: EventQueue<Event>,
@@ -10,35 +10,45 @@ pub struct Engine<Actor,Action,Event> {
     pub time: Time,
 }
 
-impl <Actor,Action,Event> Engine<Actor,Action,Event> where Actor: fmt::Debug + Clone, Action: fmt::Debug, Event: fmt::Debug {
+impl<Actor, Action, Event> Default for Engine<Actor, Action, Event>
+where
+    Actor: fmt::Debug + Clone,
+    Action: fmt::Debug,
+    Event: fmt::Debug,
+{
+    fn default() -> Self {
+        Engine::new()
+    }
+}
+
+impl<Actor, Action, Event> Engine<Actor, Action, Event>
+where
+    Actor: fmt::Debug + Clone,
+    Action: fmt::Debug,
+    Event: fmt::Debug,
+{
     pub fn new() -> Self {
-        let engine = Engine {
+        Engine {
             stop: false,
             turn: None,
             event_queue: EventQueue::default(),
             action_queue: Vec::default(),
             time: Time::default(),
-        };
-
-        engine
+        }
     }
 
     pub fn end_turn(&mut self, actor: Actor) {
         self.turn = None;
         self.action_queue.clear();
-        debug!(
-            "[{:?}] end turn for {:?}", self.time, actor
-        );
+        debug!("[{:?}] end turn for {:?}", self.time, actor);
     }
 
-    pub fn current_turn<'a>(&'a self) -> &'a Option<Actor> {
+    pub fn current_turn(&self) -> &Option<Actor> {
         &self.turn
     }
 
     pub fn new_turn(&mut self, actor: Actor) {
-        debug!(
-            "[{:?}] new turn for: {:?}", self.time, actor
-        );
+        debug!("[{:?}] new turn for: {:?}", self.time, actor);
 
         self.turn = Some(actor);
     }
@@ -62,9 +72,7 @@ impl <Actor,Action,Event> Engine<Actor,Action,Event> where Actor: fmt::Debug + C
         } else {
             let (actor, action) = self.action_queue.remove(0);
 
-            debug!(
-                "[{:?}] next action: {:?} {:?}", self.time, actor, action
-            );
+            debug!("[{:?}] next action: {:?} {:?}", self.time, actor, action);
 
             Some((self.time, actor, action))
         }
@@ -79,9 +87,7 @@ impl <Actor,Action,Event> Engine<Actor,Action,Event> where Actor: fmt::Debug + C
     }
 
     pub fn event_at(&mut self, at: Time, event: Event) {
-        debug!(
-            "[{:?}] schedule at {}: {:?}", self.time, at, event
-        );
+        debug!("[{:?}] schedule at {}: {:?}", self.time, at, event);
         self.event_queue.add(at, event);
     }
 
@@ -89,15 +95,11 @@ impl <Actor,Action,Event> Engine<Actor,Action,Event> where Actor: fmt::Debug + C
         if let Some((time, event)) = self.event_queue.next() {
             self.time = time;
 
-            debug!(
-                "[{:?}] next event: {:?}", self.time, event
-            );
+            debug!("[{:?}] next event: {:?}", self.time, event);
 
             Some((time, event))
         } else {
-            debug!(
-                "[{:?}] no events", self.time
-            );
+            debug!("[{:?}] no events", self.time);
 
             None
         }

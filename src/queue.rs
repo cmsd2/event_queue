@@ -1,18 +1,18 @@
+use super::{Event, Time};
 use std::collections::BinaryHeap;
-use super::{Event,Time};
 
 pub struct EventQueue<T> {
     generation: u32,
     queue: BinaryHeap<Event<T>>,
 }
 
-impl <T> Default for EventQueue<T> {
+impl<T> Default for EventQueue<T> {
     fn default() -> Self {
         EventQueue::new()
     }
 }
 
-impl <T> EventQueue<T> {
+impl<T> EventQueue<T> {
     pub fn new() -> Self {
         EventQueue {
             generation: 0,
@@ -24,21 +24,24 @@ impl <T> EventQueue<T> {
         self.queue.len()
     }
 
+    pub fn is_empty(&self) -> bool {
+        self.queue.is_empty()
+    }
+
+    pub fn peek(&self) -> Option<(&Time, &T)> {
+        self.queue.peek().map(|event| (&event.time, &event.item))
+    }
+
     pub fn add(&mut self, when: Time, item: T) {
-        self.generation = self.generation.checked_add(1).expect("event queue wrap around");
-        self.queue.push(Event { time: when, generation: self.generation, item: item })
-    }
-
-    pub fn next(&mut self) -> Option<(Time, T)> {
-        self.queue
-            .pop()
-            .map(|event| (event.time, event.item))
-    }
-
-    pub fn peek<'a>(&'a self) -> Option<(&'a Time, &'a T)> {
-        self.queue
-            .peek()
-            .map(|event| (&event.time, &event.item))
+        self.generation = self
+            .generation
+            .checked_add(1)
+            .expect("event queue wrap around");
+        self.queue.push(Event {
+            time: when,
+            generation: self.generation,
+            item,
+        })
     }
 
     pub fn has_next(&self) -> bool {
@@ -46,10 +49,18 @@ impl <T> EventQueue<T> {
     }
 }
 
+impl<T> Iterator for EventQueue<T> {
+    type Item = (Time, T);
+
+    fn next(&mut self) -> Option<<Self as Iterator>::Item> {
+        self.queue.pop().map(|event| (event.time, event.item))
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::events::Time;
+    use crate::time::Time;
 
     #[test]
     pub fn test_queue() {
