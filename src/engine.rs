@@ -12,7 +12,7 @@ pub struct Engine<Actor, Action, Event> {
 
 impl<Actor, Action, Event> Default for Engine<Actor, Action, Event>
 where
-    Actor: fmt::Debug + Clone,
+    Actor: fmt::Debug,
     Action: fmt::Debug,
     Event: fmt::Debug,
 {
@@ -23,7 +23,7 @@ where
 
 impl<Actor, Action, Event> Engine<Actor, Action, Event>
 where
-    Actor: fmt::Debug + Clone,
+    Actor: fmt::Debug,
     Action: fmt::Debug,
     Event: fmt::Debug,
 {
@@ -43,8 +43,8 @@ where
         debug!("[{:?}] end turn for {:?}", self.time, actor);
     }
 
-    pub fn current_turn(&self) -> &Option<Actor> {
-        &self.turn
+    pub fn current_turn(&self) -> Option<&Actor> {
+        self.turn.as_ref()
     }
 
     pub fn new_turn(&mut self, actor: Actor) {
