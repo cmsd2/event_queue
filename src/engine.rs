@@ -37,7 +37,7 @@ where
         }
     }
 
-    pub fn end_turn(&mut self, actor: Actor) {
+    pub fn end_turn(&mut self, actor: &Actor) {
         self.turn = None;
         self.action_queue.clear();
         debug!("[{:?}] end turn for {:?}", self.time, actor);
